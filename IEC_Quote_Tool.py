@@ -1,6 +1,6 @@
-"
-IEC Quote Tool update for py 3.12 ver by Cory Chang on 2023/1/31
-"
+
+# IEC Quote Tool update for py 3.12 ver by Cory Chang on 2023/1/31
+
 
 ## import the required library
 from openpyxl import load_workbook
@@ -557,8 +557,13 @@ def quote_validation():
         df_busa['Path'] = paths_cpct
         df_op['Path'] = paths_cpct
         # append
-        busa_base = busa_base.append(df_busa) 
-        op_base = op_base.append(df_op, ignore_index = True) 
+        #busa_base = busa_base.append(df_busa) 
+        #op_base = op_base.append(df_op, ignore_index = True) 
+
+        #update to concat
+        busa_base = pd.concat([busa_base, df_busa], ignore_index=True)
+        op_base = pd.concat([op_base, df_op], ignore_index=True)
+
 
         wb.close() # close file
         app.quit() # close app
@@ -690,8 +695,10 @@ def quote_validation():
     sell_base['Category'] = 'Sell Price'
     busa_base = busa_base[['SA \nLevel 3', 'Description', 'Total Base Unit Cost excluded B/S', 'Category', 'Path']]
     op_base = op_base[['SA PartNumber', 'SA Description', 'Total Cost', 'Category', 'Path']]
-    busa_base.set_axis(['HP P/N', 'Description', 'Current Price', 'Category', 'Path'],axis='columns', inplace=True)
-    op_base.set_axis(['HP P/N', 'Description', 'Current Price', 'Category', 'Path'],axis='columns', inplace=True)
+    #busa_base.set_axis(['HP P/N', 'Description', 'Current Price', 'Category', 'Path'],axis='columns', inplace=True)
+    #op_base.set_axis(['HP P/N', 'Description', 'Current Price', 'Category', 'Path'],axis='columns', inplace=True)
+    busa_base=busa_base.set_axis(axis='columns', labels=['HP P/N', 'Description', 'Current Price', 'Category', 'Path'])
+    op_base=op_base.set_axis(axis='columns', labels=['HP P/N', 'Description', 'Current Price', 'Category', 'Path'])
     HP_price_base = pd.concat([ckit_base[['HP P/N', 'Description', 'Current Price', 'Category', 'Path']], busa_base[['HP P/N', 'Description', 'Current Price', 'Category', 'Path']], sell_base[['HP P/N', 'Description', 'Current Price', 'Category', 'Path']], op_base[['HP P/N', 'Description', 'Current Price', 'Category', 'Path']]], axis=0, ignore_index=True)    
    
     #### save file----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1310,7 +1317,7 @@ def cpct_consolidation():
             df_busa = pd.read_excel(paths_cpct, skiprows = 0, sheet_name = sheet_name_busa)
         df_busa['Path'] = paths_cpct
         # append
-        busa_base = busa_base.append(df_busa) 
+        busa_base = pd.concat([busa_base, df_busa]) 
         busa_base = busa_base[['SA \nLevel 3', 'Description', 'Total Base Unit Cost excluded B/S', 'Platform', 'Path']]
         #load OptionSA_SUM quote
         #revised by Lily (lily.chen1@hp.com) to prevent 'OptionSA_SUM' sheet missing on 2022/06/10
@@ -1324,7 +1331,9 @@ def cpct_consolidation():
             sheet_op_missing.append(paths_cpct)
         # append
         df_op['Path'] = paths_cpct
-        op_base = op_base.append(df_op, ignore_index = True) 
+
+    # Concatenate dataframes
+        op_base = pd.concat([op_base, df_op], ignore_index=True)
         op_base = op_base[['SA PartNumber', 'SA Description', 'Total Cost', 'Path']]
         wb.close() # close file
         app.quit() # close app
@@ -1522,9 +1531,12 @@ def HP_Price_Consolidation():
         df_busa['Path'] = paths_cpct
         df_op['Path'] = paths_cpct
         # append
-        busa_base = busa_base.append(df_busa) 
-        op_base = op_base.append(df_op) 
+        # busa_base = busa_base.append(df_busa) 
+        # op_base = op_base.append(df_op)
 
+        #   Update to concat
+        busa_base = pd.concat([busa_base, df_busa], ignore_index=True)
+        op_base = pd.concat([op_base, df_op], ignore_index=True)
 
         wb.close() # close file
         app.quit() # close app
@@ -1573,8 +1585,10 @@ def HP_Price_Consolidation():
     sell_base['Category'] = 'Sell Price'
     busa_base = busa_base[['SA \nLevel 3', 'Description', 'Total Base Unit Cost excluded B/S', 'Category', 'Path']]
     op_base = op_base[['SA PartNumber', 'SA Description', 'Total Cost', 'Category', 'Path']]
-    busa_base.set_axis(['HP P/N', 'Description', 'Current Price', 'Category', 'Path'],axis='columns', inplace=True)
-    op_base.set_axis(['HP P/N', 'Description', 'Current Price', 'Category', 'Path'],axis='columns', inplace=True)
+    #busa_base.set_axis(['HP P/N', 'Description', 'Current Price', 'Category', 'Path'],axis='columns', inplace=True)
+    #op_base.set_axis(['HP P/N', 'Description', 'Current Price', 'Category', 'Path'],axis='columns', inplace=True)
+    busa_base=busa_base.set_axis(axis='columns', labels=['HP P/N', 'Description', 'Current Price', 'Category', 'Path'])
+    op_base=op_base.set_axis(axis='columns', labels=['HP P/N', 'Description', 'Current Price', 'Category', 'Path'])
     HP_price_base = pd.concat([ckit_base[['HP P/N', 'Description', 'Current Price', 'Category', 'Path']], busa_base[['HP P/N', 'Description', 'Current Price', 'Category', 'Path']], sell_base[['HP P/N', 'Description', 'Current Price', 'Category', 'Path']], op_base[['HP P/N', 'Description', 'Current Price', 'Category', 'Path']]], axis=0, ignore_index=True)    
    
     #### save file----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1704,8 +1718,10 @@ def TW_quote_consolidation():
         else:
             odm = 'N/A'
         df_twquote.loc[:, 'ODM'] = odm 
-        df_twquote.set_axis(['Part', 'Description', new_effective_day, 'Platform', 'ODM'], axis='columns', inplace=True)
-        df = df.append(df_twquote) 
+        #df_twquote.set_axis(['Part', 'Description', new_effective_day, 'Platform', 'ODM'], axis='columns', inplace=True)
+        #df = df.append(df_twquote)
+        df_twquote=df_twquote.set_axis(axis='columns', labels=['Part', 'Description', new_effective_day, 'Platform', 'ODM'])
+        df = pd.concat([df,df_twquote])
         
         df_twquote_BOM = df_twquote_BOM.iloc[:, [1,2]]
         df_twquote_BOM = df_twquote_BOM.dropna(how='all')
@@ -1713,8 +1729,12 @@ def TW_quote_consolidation():
         df_twquote_BOM['ODM'] = odm 
         #df_twquote_BOM.loc[:, 'Path'] = paths_quote
         df_twquote_BOM['Path'] = paths_quote
-        df_twquote_BOM.set_axis(['SKU', 'AV', 'ODM', 'Path'], axis='columns', inplace=True)
-        df2 = df2.append(df_twquote_BOM)        
+        #df_twquote_BOM.set_axis(['SKU', 'AV', 'ODM', 'Path'], axis='columns', inplace=True)
+        #df2 = df2.append(df_twquote_BOM)
+
+        df_twquote_BOM=df_twquote_BOM.set_axis(axis='columns', labels=['SKU', 'AV', 'ODM', 'Path'])
+        df2 = pd.concat([df2,df_twquote_BOM])
+
         wb.close() # close file
         app.quit() # close app
 
