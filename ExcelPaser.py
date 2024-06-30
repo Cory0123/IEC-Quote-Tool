@@ -12,13 +12,21 @@ def update_master_data_sheets():
             
             try:
                 wb = openpyxl.load_workbook(file_path)
-                if 'Master Data' in wb.sheetnames:
-                    sheet = wb['Master Data']
-                    sheet['D1'] = 'Current Month'
+                
+                # 忽略大小寫比較工作表名稱
+                master_data_sheet = None
+                for sheet_name in wb.sheetnames:
+                    if sheet_name.lower() == 'master data':
+                        master_data_sheet = wb[sheet_name]
+                        break
+                
+                if master_data_sheet:
+                    master_data_sheet['D1'] = 'Current Month'
                     wb.save(file_path)
                     print(f"Updated {filename}: 'Master Data' sheet D1 cell.")
                 else:
                     print(f"Skipped {filename}: No 'Master Data' sheet found.")
+            
             except Exception as e:
                 print(f"Error processing {filename}: {str(e)}")
 
