@@ -464,9 +464,20 @@ def quote_validation():
         # df_quote_masterdata = df_quote_masterdata.dropna(how='any')
 
         df_quote_ckit_column_name = df_quote_ckit.columns.tolist()
+        effective_column_name2 = None
         for i in df_quote_ckit_column_name:
             if 'Current' in i:
                 effective_column_name2 = i
+            break  
+        # Exit loop once the first matching column is found
+
+        if effective_column_name2 is not None:
+                df_quote_ckit = df_quote_ckit.reindex(columns=['HP Part #', 'Type', effective_column_name2])
+                    # Optionally, you can proceed with further operations on df_quote_ckit
+        else:
+                     # Handle case where no 'Current' column was found
+                print("No column containing 'Current' found in df_quote_ckit.")
+
         df_quote_ckit = df_quote_ckit.reindex(columns=['HP Part #', 'Type', effective_column_name2])
         # df_quote_ckit = df_quote_ckit.dropna(how='any')
 
@@ -1310,7 +1321,7 @@ def cpct_consolidation():
             if 'OptionSA_SUM' in i: 
                 sheet_name_op = i            
 
-        #load the BU SA data
+        # load the BU SA data
         if 'xlsb' in paths_cpct:
             df_busa = pd.read_excel(paths_cpct, engine='pyxlsb', skiprows = 0, sheet_name = sheet_name_busa)
         else: 
@@ -1732,8 +1743,14 @@ def TW_quote_consolidation():
         #df_twquote_BOM.set_axis(['SKU', 'AV', 'ODM', 'Path'], axis='columns', inplace=True)
         #df2 = df2.append(df_twquote_BOM)
 
-        df_twquote_BOM=df_twquote_BOM.set_axis(axis='columns', labels=['SKU', 'AV', 'ODM', 'Path'])
-        df2 = pd.concat([df2,df_twquote_BOM])
+    #    df_twquote_BOM=df_twquote_BOM.set_axis(axis='columns', labels=['SKU', 'AV', 'ODM', 'Path'])
+    #    df2 = pd.concat([df2,df_twquote_BOM])
+
+        # Rename columns in df_twquote_BOM(update by Cory 2024/6)
+        df_twquote_BOM = df_twquote_BOM.rename(columns={'SKU': 'SKU', 'AV': 'AV', 'ODM': 'ODM', 'Path': 'Path'})
+
+        # Concatenate df2 and df_twquote_BOM(update by Cory 2024/6)
+        df2 = pd.concat([df2, df_twquote_BOM], ignore_index=True)
 
         wb.close() # close file
         app.quit() # close app
@@ -1754,17 +1771,31 @@ def TW_quote_consolidation():
     if not os.path.exists(dirName):
         os.mkdir(dirName) 
 
+#update by Cory 2024/6
+    #dirName = 'path/to/directory'  # Replace with your directory path
+
+# Check if directory exists
+#if not os.path.exists(dirName):
+#    try:
+#        os.mkdir(dirName)
+#        print(f"Directory '{dirName}' created successfully.")
+#    except OSError as e:
+#        print(f"Error creating directory '{dirName}': {e}")
+#else:
+#    print(f"Directory '{dirName}' already exists.")
+
+
         #create a Pandas Excel writer using XlsxWriter as the engine
     writer = pd.ExcelWriter(dirName+'/TW Quote Consolidation_'+text+'_'+datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')+'.xlsx', engine='xlsxwriter')
 
         #write each DataFrame to a specific sheet
-    df_twquote_AV.to_excel(writer, sheet_name='AV', index=False)
-    df_twquote_SKU.to_excel(writer, sheet_name='SKU', index=False)
+    df_twquote_AV.to_excel(writer, sheet_name='AV Summary', index=False)
+    df_twquote_SKU.to_excel(writer, sheet_name='SKU Summary', index=False)
     #format header
         # Get the xlsxwriter workbook and worksheet objects.
     workbook  = writer.book
-    worksheet = writer.sheets['AV']
-    worksheet2 = writer.sheets['SKU']
+    worksheet = writer.sheets['AV Summary']
+    worksheet2 = writer.sheets['SKU Summary']
 
         # Add a header format.
     header_format = workbook.add_format({
