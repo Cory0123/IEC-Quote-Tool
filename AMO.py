@@ -1,6 +1,5 @@
 import os
-from openpyxl import load_workbook, Workbook
-from openpyxl.utils import get_column_letter
+import pandas as pd
 from PyQt5.QtWidgets import QApplication, QMessageBox, QWidget, QPushButton, QVBoxLayout, QFileDialog
 from datetime import datetime
 
@@ -36,16 +35,16 @@ class Get_QuoteForm(QWidget):
         if self.file_paths:
             self.close()
 
-def find_summary_sheet(wb):
+def find_summary_sheet(df_dict):
     """Find the first sheet containing 'summary' in its name, case insensitive."""
-    for sheet_name in wb.sheetnames:
+    for sheet_name, df in df_dict.items():
         if "summary" in sheet_name.lower():
-            return wb[sheet_name]
+            return df
     raise ValueError("No sheet containing 'summary' found in the workbook")
 
 def process_quote_file(file_path):
     # Load the workbook from the provided file path
-    wb = load_workbook(filename=file_path)
+    xl = pd.ExcelFile(file_path)
     
     # Check if a summary file already exists
     today_date = datetime.today().strftime('%Y-%m-%d')
@@ -53,29 +52,20 @@ def process_quote_file(file_path):
     output_path = os.path.join(os.path.dirname(file_path), output_filename)
     
     # Find the summary sheet
-    sheet = find_summary_sheet(wb)
+    sheet = find_summary_sheet(xl.parse(sheet_name=None))
     
     if os.path.exists(output_path):
         # If summary file already exists, load it instead of creating a new one
-        new_wb = load_workbook(filename=output_path)
-        new_sheet = new_wb.active
+        new_df = pd.read_excel(output_path)
         
-        #for row in sheet.iter_rows(values_only=True):
-        #    new_sheet.append(row)
-            
-        # Iterate through all rows from the second row onwards in the summary sheet and copy to new workbook
-        for row in sheet.iter_rows(min_row=2, values_only=True):
-            new_sheet.append(row)
+        # Append the new data to the existing DataFrame
+        new_df = pd.concat([new_df, sheet.iloc[0:]], ignore_index=True)
     else:
-        # Otherwise, create a new workbook
-        new_wb = Workbook()
-        new_sheet = new_wb.active
-        
-        for row in sheet.iter_rows(values_only=True):
-            new_sheet.append(row)
+        # Otherwise, use the current summary sheet
+        new_df = sheet
     
-    # Save the new workbook
-    new_wb.save(output_path)
+    # Save the new DataFrame to an Excel file
+    new_df.to_excel(output_path, index=False)
     
     # Return the path where the new file is saved
     return output_path
