@@ -209,10 +209,16 @@ def cpct_checker():
         row_no += 1
 
         # Save file: Create target Directory if it doesn't exist
-        dirName = '/'.join(cpct_checkpath[0].split('/')[:-1])+'_revised'
+        new_name = os.path.splitext(name)[0] + "_rev" + os.path.splitext(name)[1]
+
+        # Find dictionary + "revised"
+        dirName = '/'.join(cpct_checkpath[0].split('/')[:-1]) + '_revised'
         if not os.path.exists(dirName):
-            os.mkdir(dirName)     
-        wb2.save(dirName + '/' + name)
+            os.makedirs(dirName, exist_ok=True)
+
+        # Save wb2 new as name+"rev"
+        wb2.save(os.path.join(dirName, new_name))
+        
         wb2.close()
         app.kill()
         if_tbd = 0
@@ -520,7 +526,17 @@ def quote_validation():
 
     #### Get BUSA & OP quote from CPCT's BUSA sheet-----------------------------------------------------------------------------------------
     #Add OP Quote -- Lily 2022/05/18
+    #update by Cory 20240702 - colume name not affectby any space or \N in header
     busa_base = pd.DataFrame(columns=['SA \nLevel 3', 'Description', 'Total Base Unit Cost excluded B/S', 'Path'])
+    
+    original_columns = ['SA \nLevel 3', 'Description', 'Total Base Unit Cost excluded B/S', 'Path']
+
+    # stripped column
+    cleaned_columns = [col.strip().replace('\n', '') for col in original_columns]
+
+    # Create a new DataFrame as new column
+    busa_base = pd.DataFrame(columns=cleaned_columns)
+    
     op_base = pd.DataFrame(columns=['SA PartNumber', 'SA Description', 'Total Cost', 'Path'])
     sheet_op_missing = []
     for paths_cpct in fileName_busa:

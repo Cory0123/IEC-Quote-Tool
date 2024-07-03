@@ -1,1 +1,0 @@
-"# IEC-Quote-Tool" 
