@@ -1,12 +1,8 @@
 import os
-import openpyxl
-from openpyxl.utils import get_column_letter
 from openpyxl import load_workbook, Workbook
-from PyQt5.QtWidgets import QApplication, QFileDialog, QWidget, QMessageBox, QPushButton, QVBoxLayout
-
+from openpyxl.utils import get_column_letter
+from PyQt5.QtWidgets import QApplication, QMessageBox, QWidget, QPushButton, QVBoxLayout, QFileDialog
 from datetime import datetime
-from shutil import copyfile
-from openpyxl.utils.cell import coordinate_from_string, column_index_from_string
 
 class Get_QuoteForm(QWidget):
     def __init__(self, name='Get_QuoteForm'):
@@ -31,53 +27,64 @@ class Get_QuoteForm(QWidget):
 
     def slot_btn_chooseFile1(self):
         global QuoteName_choose
+        start_path = os.path.join(os.getcwd(), "5. AMO")
         self.file_paths, _ = QFileDialog.getOpenFileNames(self,  
                                     "Choose Quote file's Path",  
-                                    "", # start path
+                                    start_path, # start path
                                     "Excel File (*.xlsx *.xls *.xlsb);;All Files (*)")   
 
         if self.file_paths:
             self.close()
 
-
 def find_summary_sheet(wb):
+    """Find the first sheet containing 'summary' in its name, case insensitive."""
     for sheet_name in wb.sheetnames:
         if "summary" in sheet_name.lower():
             return wb[sheet_name]
     raise ValueError("No sheet containing 'summary' found in the workbook")
 
-
 def process_quote_file(file_path):
     # Load the workbook from the provided file path
     wb = load_workbook(filename=file_path)
     
-    # Usage example
-    wb = load_workbook(filename=file_path)
+    # Check if a summary file already exists
+    today_date = datetime.today().strftime('%Y-%m-%d')
+    output_filename = f"Summary_AMO_{today_date}.xlsx"
+    output_path = os.path.join(os.path.dirname(file_path), output_filename)
+    
+    # Find the summary sheet
     sheet = find_summary_sheet(wb)
     
-    # Create a new workbook to paste the data
-    new_wb = Workbook()
-    new_sheet = new_wb.active
+    if os.path.exists(output_path):
+        # If summary file already exists, load it instead of creating a new one
+        new_wb = load_workbook(filename=output_path)
+        new_sheet = new_wb.active
+        
+        #for row in sheet.iter_rows(values_only=True):
+        #    new_sheet.append(row)
+            
+        # Iterate through all rows from the second row onwards in the summary sheet and copy to new workbook
+        for row in sheet.iter_rows(min_row=2, values_only=True):
+            new_sheet.append(row)
+    else:
+        # Otherwise, create a new workbook
+        new_wb = Workbook()
+        new_sheet = new_wb.active
+        
+        for row in sheet.iter_rows(values_only=True):
+            new_sheet.append(row)
     
-    # Iterate through all rows in the summary sheet and copy to new workbook
-    for row in sheet.iter_rows(values_only=True):
-        new_sheet.append(row)
-    
-    # Save the new workbook with today's date as the file name
-    today_date = datetime.today().strftime('%Y-%m-%d')
-    output_filename = f"Summary_{today_date}.xlsx"
-    output_path = os.path.join(os.path.dirname(file_path), output_filename)
+    # Save the new workbook
     new_wb.save(output_path)
     
     # Return the path where the new file is saved
     return output_path
 
 def create_docking_av_sku():
-    print("hello world")
-    app = QApplication([])  # 初始化 PyQt5 應用程式
-    quote_form = Get_QuoteForm()  # 創建取得報價表單的視窗
-    quote_form.show()  # 顯示報價表單視窗
-    app.exec_()  # 開始 PyQt5 的事件迴圈，等待使用者操作完畢後返回控制
+    app = QApplication([])  # Initialize PyQt5 application
+    quote_form = Get_QuoteForm()  # Create quote form window
+    quote_form.show()  # Show quote form window
+    app.exec_()  # Start PyQt5 event loop and wait for user interaction
 
     if quote_form.file_paths:
         for file_path in quote_form.file_paths:
@@ -86,6 +93,7 @@ def create_docking_av_sku():
                 show_message_box(f"Updated file saved to:\n{output_path}\n\nDone")
             except Exception as e:
                 show_message_box(f"Error processing file {file_path}:\n{str(e)}")
+    return output_path
 
 def show_message_box(message):
     msg_box = QMessageBox()
@@ -94,4 +102,6 @@ def show_message_box(message):
     msg_box.exec_()
 
 if __name__ == "__main__":
-    create_docking_av_sku()
+    print("hello world")
+    output_path = create_docking_av_sku()
+    print("created " + output_path)
