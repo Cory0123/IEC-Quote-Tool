@@ -1,4 +1,4 @@
-How to Run the Script ... by Ted
+How to Run the Script ... by Ted yeh ...
 
 Step 1: Open Terminal in Visual Studio Code
     Click on the "Terminal" tab in the top-left corner.
