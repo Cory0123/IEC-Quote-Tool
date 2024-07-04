@@ -47,8 +47,9 @@ def process_quote_file(file_path):
     xl = pd.ExcelFile(file_path)
     
     # Check if a summary file already exists
-    today_date = datetime.today().strftime('%Y-%m-%d')
-    output_filename = f"Summary_AMO_{today_date}.xlsx"
+    #today_date = datetime.today().strftime('%Y-%m-%d')
+    #output_filename = f"Summary_AMO2_{today_date}.xlsx"
+    output_filename = "Summary_AMO.xlsx"
     output_path = os.path.join(os.path.dirname(file_path), output_filename)
     
     # Find the summary sheet
