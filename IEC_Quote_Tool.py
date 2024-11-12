@@ -413,27 +413,44 @@ def quote_validation():
         else:
             quote_program_matrix = pd.ExcelFile(paths_quote)
 
-        sheet_names = quote_program_matrix.sheet_names 
+        #sheet_names = quote_program_matrix.sheet_names
+        xls = pd.ExcelFile(paths_quote, engine='pyxlsb')
+        sheet_names = xls.sheet_names
 
+        # initialize variants
         sheet_name_changelog = []
         sheet_name_master_data = []
         sheet_name_ckit = []
         sheet_name_busa = []
+        
+        # for i in sheet_names:
+        #    if 'Change Log' in i:
+        #        sheet_name_changelog = i
+        #    if 'Change log' in i:
+        #        sheet_name_changelog = i
+        #    if 'Master Data' in i: 
+        #        sheet_name_master_data = i
+        #    if 'Master data' in i: 
+        #        sheet_name_master_data = i                
+        #    if 'CKIT' in i: 
+        #        sheet_name_ckit = i
+        #    if 'BUSA' in i: 
+        #        sheet_name_busa = i            
+        #    if 'BU SA' in i: 
+        #        sheet_name_busa = i 
+
+
+        # normalize_sheet_name, ignore blank and capitals
         for i in sheet_names:
-            if 'Change Log' in i:
+            normalized_name = normalize_sheet_name(i)
+            if 'change log' in normalized_name:
                 sheet_name_changelog = i
-            if 'Change log' in i:
-                sheet_name_changelog = i
-            if 'Master Data' in i: 
+            elif 'master data' in normalized_name:
                 sheet_name_master_data = i
-            if 'Master data' in i: 
-                sheet_name_master_data = i                
-            if 'CKIT' in i: 
+            elif 'ckit' in normalized_name:
                 sheet_name_ckit = i
-            if 'BUSA' in i: 
-                sheet_name_busa = i            
-            if 'BU SA' in i: 
-                sheet_name_busa = i 
+            elif 'busa' in normalized_name or 'bu sa' in normalized_name:
+                sheet_name_busa = i
 
         #get platform & ODM's name
         import xlwings as xw
@@ -525,10 +542,8 @@ def quote_validation():
 
 
     #### Get BUSA & OP quote from CPCT's BUSA sheet-----------------------------------------------------------------------------------------
-    #Add OP Quote -- Lily 2022/05/18
-    #update by Cory 20240702 - colume name not affectby any space or \N in header
+    #colume name not affectby any space or \N in header
     busa_base = pd.DataFrame(columns=['SA \nLevel 3', 'Description', 'Total Base Unit Cost excluded B/S', 'Path'])
-    
     original_columns = ['SA \nLevel 3', 'Description', 'Total Base Unit Cost excluded B/S', 'Path']
 
     # stripped column
@@ -556,13 +571,19 @@ def quote_validation():
 
         sheet_name_busa = []
         sheet_name_op = []
+        
+        normalize_sheet_name()
         for i in sheet_names:
-            if 'BUSA' in i: 
+        if 'change log' in normalized_name:
+            sheet_name_changelog = i
+        elif 'master data' in normalized_name:
+            sheet_name_master_data = i
+            
+        for i in sheet_names:
+            if 'option_sum' in i: 
                 sheet_name_busa = i            
-            if 'BU SA' in i: 
+            elif 'busa' in normalized_name or 'bu sa' in normalized_name:
                 sheet_name_busa = i 
-            if 'OptionSA_SUM' in i: 
-                sheet_name_op = i
                 
         #load the data
         #revised by Lily (lily.chen1@hp.com) to prevent 'OptionSA_SUM' sheet missing on 2022/06/10
@@ -974,7 +995,6 @@ def xlookup(lookup_value, lookup_array, return_array, if_not_found:str = ''):
         return match_value.tolist()[0]
 ## 2-4.function2-4: Create a function that is similar to vlookup in excel---End-------------------------------------------------------------------------
 
-#revised by Lily (lily.chen1@hp.com) to prevent 'OptionSA_SUM' sheet missing on 2022/06/10
 ## 2-5.function2-5: Let user know "OP SUM' sheet is missing in CPCT ---Start----------------------------------------
 class MissingOPForm(QWidget):
     def __init__(self, name = 'MissingOPForm'):
@@ -991,9 +1011,7 @@ class MissingOPForm(QWidget):
         layout = QVBoxLayout()
         layout.addWidget(self.btn_done)
 
-
         self.setLayout(layout)
-
 
         # set the widget's signal
         self.btn_done.clicked.connect(self.close)
@@ -1008,6 +1026,9 @@ def MissingOP():
         print('Closing Window...')
 ## 2-5.function2-5: Let user know "OP SUM' sheet is missing in CPCT ---Start----------------------------------------
 
+## Standardize_name
+def normalize_sheet_name(sheet_name):
+        return sheet_name.strip().lower()
 ## 2.function2: Quote Validation ---End-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
