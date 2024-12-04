@@ -648,7 +648,7 @@ def Quote_Validation():
             
     sheet_program_matrix = wb.sheets[sheet_name_program_matrix]
     max_row = df_quote_programmatrix.shape[0]
-    sheet_program_matrix.insert_cols(15) #insert column for Wistron
+    #wb.sheets[sheet_name_program_matrix].insert_cols(15) #insert column for Wistron
     
     for i in range(2,max_row):
         if sheet_program_matrix.range(i+6,11).value == 'Dummy':      
@@ -689,12 +689,12 @@ def Quote_Validation():
                 if sheet_program_matrix.range(i+6,13).value != "NA" and sheet_program_matrix.range(i+6,13).value != "NotAvaible" and sheet_program_matrix.range(i+6,13).value != "#N/A" and sheet_program_matrix.range(i+6,13).value != None:
                     for k in range(0, 16): #column
                         sheet_program_matrix.range(i+6,k+1).color = (255, 100, 255)
-                        
+        """                  
         if sheet_program_matrix.range(i+7,12).value != None and sheet_program_matrix.range(i+7,15).value - sheet_program_matrix.range(i+7,12).value != 0.00:
                 if sheet_program_matrix.range(i+7,15).value != "NA" and sheet_program_matrix.range(i+7,15).value != "NotAvaible" and sheet_program_matrix.range(i+7,15).value != None:
                     for k in range(0, 16): #column
                         sheet_program_matrix.range(i+6,k+1).color = (255, 100, 255)
-                        
+        """                  
     #--------------------------------------------------------------------------------------------------        
 # AV Summary (v.s. price in Program Matrix)
     sheet_av_summary = wb.sheets[sheet_name_avsummary]
@@ -799,9 +799,9 @@ def Quote_Validation():
         
     #show in the sheet
     if len(repetition1_index) != 0:
-        sheet_program_matrix.range('T1').value = 'Data has repetition AV as below'       
-        sheet_program_matrix.range('A1:X1').color = (102, 255, 178)
-        sheet_program_matrix.range('T2').value = repetition1  
+        sheet_tmp.range('L1').value = 'Data has repetition AV as below'       
+        sheet_tmp.range('L1:X1').color = (102, 255, 178)
+        sheet_tmp.range('L2').value = repetition1  
     #pop up alert
         program_matirx_warn_code()
     
