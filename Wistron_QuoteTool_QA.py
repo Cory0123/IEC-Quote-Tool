@@ -607,7 +607,7 @@ def Quote_Validation():
         sheet_ckit.range(i+2,14).value = f"=IFERROR(VLOOKUP(B{i+2},tmp!B:W,3,0), \"Null\" )"
         sheet_ckit.range(i+2,15).value = f"=IFERROR(ROUND(N{i+2}-F{i+2},2), \"Null\" )"
         if  sheet_ckit.range(i+2,15).value != 0.00:
-            for j in range(1, 15):
+            for j in range(1, 17):
                 sheet_ckit.range(i+2,j).color = (255, 100, 255)
                 
     #---------------------------------------------------------------------------------------------------------------MASTER DATA
@@ -648,13 +648,14 @@ def Quote_Validation():
             
     sheet_program_matrix = wb.sheets[sheet_name_program_matrix]
     max_row = df_quote_programmatrix.shape[0]
+    sheet_program_matrix.insert_cols(15) #insert column for Wistron
     
     for i in range(2,max_row):
         if sheet_program_matrix.range(i+6,11).value == 'Dummy':      
             if 'FINAL' in file_name_upper:
-                sheet_program_matrix.range(i+6,16).value = 0.00
+                sheet_program_matrix.range(i+6,15).value = 0.00
             else:
-                sheet_program_matrix.range(i+6,16).value = 0.01
+                sheet_program_matrix.range(i+6,15).value = 0.01
         else: 
             sa = f"IFERROR(VLOOKUP(E{i+6},tmp!B:W,3,0)*I{i+6},"
             componets = f"IFERROR(VLOOKUP(F{i+6},tmp!B:W,3,0)*I{i+6},"
@@ -683,9 +684,14 @@ def Quote_Validation():
     av_index_end.insert(len(av_index_end)+1, av_index[-1]+100)
     for i, j in zip(av_index, av_index_end):
         sheet_program_matrix.range(i+6,14).value = f"=SUM(O{i+6}:O{j+5})"
-        sheet_program_matrix.range(i+6,16).value = f"=IFERROR(ROUND(M{i+6}-P{i+6},2), \"Null\")"
+        sheet_program_matrix.range(i+6,16).value = f"=IFERROR(ROUND(M{i+6}-N{i+6},2), \"Null\")"
         if sheet_program_matrix.range(i+6,13).value != None and sheet_program_matrix.range(i+6,16).value != 0.00:
                 if sheet_program_matrix.range(i+6,13).value != "NA" and sheet_program_matrix.range(i+6,13).value != "NotAvaible" and sheet_program_matrix.range(i+6,13).value != "#N/A" and sheet_program_matrix.range(i+6,13).value != None:
+                    for k in range(0, 16): #column
+                        sheet_program_matrix.range(i+6,k+1).color = (255, 100, 255)
+                        
+        if sheet_program_matrix.range(i+7,12).value != None and sheet_program_matrix.range(i+7,15).value - sheet_program_matrix.range(i+7,12).value != 0.00:
+                if sheet_program_matrix.range(i+7,15).value != "NA" and sheet_program_matrix.range(i+7,15).value != "NotAvaible" and sheet_program_matrix.range(i+7,15).value != None:
                     for k in range(0, 16): #column
                         sheet_program_matrix.range(i+6,k+1).color = (255, 100, 255)
                         
@@ -743,47 +749,7 @@ def Quote_Validation():
                     sheet_sku_summary.range(i+2,j).color = (255, 100, 255)
                 
     """       
-        
-    #Program Matrix has repetitive AV? 
-    repetition1_index = ''
     
-    tmp = df_quote_programmatrix[AV_column_name].dropna()
-    df1_tmp = df_quote_programmatrix[df_quote_programmatrix[AV_column_name].isin(tmp)]
-    """   
-    if len(df1_tmp[df1_tmp.duplicated(subset=[AV_column_name])]) != 0: 
-        repetition1 = df1_tmp[df1_tmp.duplicated(subset=[AV_column_name]) & df1_tmp['Current Month'] != 0].loc[:,[AV_column_name, 'Current Month']]
-        repetition1_index = repetition1.index.tolist()
-    """
-    CurrentMonth= [col for col in df_quote_programmatrix.columns if 'Current' in col and 'Month' in col][0]
-    df_quote_programmatrix[CurrentMonth] = (
-    df_quote_programmatrix[CurrentMonth]
-    .astype(str)                     # 確保為字串格式
-    .str.strip()                     # 去除前後空格
-    .str.replace(r'[^\d.]', '', regex=True)  # 移除非數字和小數點的字符
-    )
-           
-    if len(df1_tmp[df1_tmp.duplicated(subset=[AV_column_name])]) != 0: 
-    # 篩選重複值且 'Current Month' 不為 0 的行
-        repetition1 = df1_tmp[df1_tmp.duplicated(subset=[AV_column_name]) & (df1_tmp[CurrentMonth] != 0)].loc[:, [AV_column_name, CurrentMonth]]
-        repetition1_index = repetition1.index.tolist()
-        
-        
-    #show in the sheet
-    if len(repetition1_index) != 0:
-        sheet_program_matrix.range('T1').value = 'Data has repetition AV as below'       
-        sheet_program_matrix.range('A1:X1').color = (102, 255, 178)
-        sheet_program_matrix.range('T2').value = repetition1  
-    #pop up alert
-        program_matirx_warn_code()
-    
-    #SRP BOM has repetitive AV?
-    repetition2_index = ''
-    tmp = df_quote_srpbom.iloc[:,1].dropna()
-    df2_tmp = df_quote_srpbom[df_quote_srpbom.iloc[:,1].isin(tmp)]
-    if len(df2_tmp[df2_tmp.duplicated(subset=df_quote_srpbom.columns[:1])]) != 0:
-        repetition2 = df2_tmp[df2_tmp.duplicated(subset=df_quote_srpbom.columns[:2])]
-        repetition2_index = repetition2.index.tolist()
-        #print(repetition2) 
     """       
     #show in the sheet
     if len(repetition2_index) != 0:
@@ -812,6 +778,41 @@ def Quote_Validation():
         sheet_tmp.range('F1').value = 'Data has repetition PN with different price as below'       
         sheet_tmp.range('F1:J1').color = (102, 255, 178)
         sheet_tmp.range('F2').value = df_repetition   
+    
+    #Program Matrix has repetitive AV? 
+    repetition1_index = ''
+    tmp = df_quote_programmatrix[AV_column_name].dropna()
+    df1_tmp = df_quote_programmatrix[df_quote_programmatrix[AV_column_name].isin(tmp)]
+
+    CurrentMonth= [col for col in df_quote_programmatrix.columns if 'Current' in col and 'Month' in col][0]
+    df_quote_programmatrix[CurrentMonth] = (
+    df_quote_programmatrix[CurrentMonth]
+    .astype(str)                     # 確保為字串格式
+    .str.strip()                     # 去除前後空格
+    .str.replace(r'[^\d.]', '', regex=True)  # 移除非數字和小數點的字符
+    )
+           
+    if len(df1_tmp[df1_tmp.duplicated(subset=[AV_column_name])]) != 0: 
+    # 篩選重複值且 'Current Month' 不為 0 的行
+        repetition1 = df1_tmp[df1_tmp.duplicated(subset=[AV_column_name]) & (df1_tmp[CurrentMonth] != 0)].loc[:, [AV_column_name, CurrentMonth]]
+        repetition1_index = repetition1.index.tolist()
+        
+    #show in the sheet
+    if len(repetition1_index) != 0:
+        sheet_program_matrix.range('T1').value = 'Data has repetition AV as below'       
+        sheet_program_matrix.range('A1:X1').color = (102, 255, 178)
+        sheet_program_matrix.range('T2').value = repetition1  
+    #pop up alert
+        program_matirx_warn_code()
+    
+    #SRP BOM has repetitive AV?
+    repetition2_index = ''
+    tmp = df_quote_srpbom.iloc[:,1].dropna()
+    df2_tmp = df_quote_srpbom[df_quote_srpbom.iloc[:,1].isin(tmp)]
+    if len(df2_tmp[df2_tmp.duplicated(subset=df_quote_srpbom.columns[:1])]) != 0:
+        repetition2 = df2_tmp[df2_tmp.duplicated(subset=df_quote_srpbom.columns[:2])]
+        repetition2_index = repetition2.index.tolist()
+        #print(repetition2) 
     
     # Create target Directory if don't exist
     dirName = '\\'.join(re.split('\\\\|/', paths_quote)[:-1])+'_revised'
