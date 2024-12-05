@@ -779,25 +779,6 @@ def Quote_Validation():
         sheet_tmp.range('F1:J1').color = (102, 255, 178)
         sheet_tmp.range('F2').value = df_repetition   
     
-    #Program Matrix has repetitive AV? 
-    repetition1_index = ''
-    tmp = df_quote_programmatrix[AV_column_name].dropna()
-    df1_tmp = df_quote_programmatrix[df_quote_programmatrix[AV_column_name].isin(tmp)]
-
-    CurrentMonth= sheet_program_matrix.range("M5").value       
-    if len(df1_tmp[df1_tmp.duplicated(subset=[AV_column_name])]) != 0: 
-    # Remove duplicate and 'Current Month' value != 0 row
-        repetition1 = df1_tmp[df1_tmp.duplicated(subset=[AV_column_name]) & (df1_tmp[CurrentMonth] != 0)].loc[:, [AV_column_name, CurrentMonth]]
-        repetition1_index = repetition1.index.tolist()
-        
-    #show in the sheet
-    if len(repetition1_index) != 0:
-        sheet_tmp.range('L1').value = 'Data has repetition AV as below'       
-        sheet_tmp.range('L1:X1').color = (102, 255, 178)
-        sheet_tmp.range('L2').value = repetition1  
-    #pop up alert
-        program_matirx_warn_code()
-    
     #SRP BOM has repetitive AV?
     repetition2_index = ''
     tmp = df_quote_srpbom.iloc[:,1].dropna()
