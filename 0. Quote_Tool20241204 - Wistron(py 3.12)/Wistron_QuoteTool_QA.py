@@ -683,39 +683,12 @@ def Quote_Validation():
     av_index_end.pop(0)
     av_index_end.insert(len(av_index_end)+1, av_index[-1]+100)
     for i, j in zip(av_index, av_index_end):
-        #sheet_program_matrix.range(i+6,14).value = f"=SUM(O{i+6}:O{j+5})"
+        sheet_program_matrix.range(i+6,14).value = f"=SUM(O{i+6}:O{j+5})"
         sheet_program_matrix.range(i+6,16).value = f"=IFERROR(ROUND(M{i+6}-N{i+6},2), \"Null\")"
         if sheet_program_matrix.range(i+6,13).value != None and sheet_program_matrix.range(i+6,16).value != 0.00:
                 if sheet_program_matrix.range(i+6,13).value != "NA" and sheet_program_matrix.range(i+6,13).value != "NotAvaible" and sheet_program_matrix.range(i+6,13).value != "#N/A" and sheet_program_matrix.range(i+6,13).value != None:
                     for k in range(0, 16): #column
                         sheet_program_matrix.range(i+6,k+1).color = (255, 100, 255)
-                        
-    # New trial 2024/12/3
-        sheet = sheet_program_matrix  # 假設數據在第一個工作表
-        header = sheet.range("A1").expand("right").value
-        av_col = header.index("AV Level 2") + 1    
-        o_col = header.index("O") + 1    
-        n_col = header.index("N") + 1# 獲取數據範圍    
-        last_row = sheet.range("A1").expand("down").last_cell.row     
-        av_values = sheet.range((2, av_col), (last_row, av_col)).value     
-        o_values = sheet.range((2, o_col), (last_row, o_col)).value     # 計算加總並寫回    
-        current_sum = 0    
-        current_av = None    
-        result = [None] * len(av_values)         
-        for i, (av, o) in enumerate(zip(av_values, o_values)):         
-            if av != current_av:  # 遇到新的 AV Level2
-                if current_av is not None:                 
-                    result[i-1] = current_sum  # 儲存上一段的加總            
-                current_av = av            
-                current_sum = 0        
-            current_sum +=  o if o is not None else 0
-            # 最後一段的加總
-        if current_av is not None: 
-            result[len(av_values) - 1] = current_sum 
-        # 寫入 N 欄 
-        sheet.range((2, n_col), (last_row, n_col)).value = result            
-                                     
-                        
         """                  
         if sheet_program_matrix.range(i+7,12).value != None and sheet_program_matrix.range(i+7,15).value - sheet_program_matrix.range(i+7,12).value != 0.00:
                 if sheet_program_matrix.range(i+7,15).value != "NA" and sheet_program_matrix.range(i+7,15).value != "NotAvaible" and sheet_program_matrix.range(i+7,15).value != None:
