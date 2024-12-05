@@ -670,9 +670,9 @@ def Quote_Validation():
     AV_column_name = [col for col in df_quote_programmatrix.columns if 'AV' in col and 'Level 2' in col][0]
     df_quote_programmatrix[AV_column_name] = (
     df_quote_programmatrix[AV_column_name]
-    .astype(str)                     # 確保為字串格式
-    .str.strip()                     # 去除前後空格
-    .str.replace(r'[^\d.]', '', regex=True)  # 移除非數字和小數點的字符
+    .astype(str)                     # as type
+    .str.strip()                     # strip
+    .str.replace(r'[^\d.]', '', regex=True)  # remove non-numeric and float
     )
 
     av_index = df_quote_programmatrix[df_quote_programmatrix[AV_column_name].notnull()].index.tolist()
@@ -689,12 +689,12 @@ def Quote_Validation():
                 if sheet_program_matrix.range(i+6,13).value != "NA" and sheet_program_matrix.range(i+6,13).value != "NotAvaible" and sheet_program_matrix.range(i+6,13).value != "#N/A" and sheet_program_matrix.range(i+6,13).value != None:
                     for k in range(0, 16): #column
                         sheet_program_matrix.range(i+6,k+1).color = (255, 100, 255)
-        """                  
+                        
         if sheet_program_matrix.range(i+7,12).value != None and sheet_program_matrix.range(i+7,15).value - sheet_program_matrix.range(i+7,12).value != 0.00:
                 if sheet_program_matrix.range(i+7,15).value != "NA" and sheet_program_matrix.range(i+7,15).value != "NotAvaible" and sheet_program_matrix.range(i+7,15).value != None:
                     for k in range(0, 16): #column
                         sheet_program_matrix.range(i+6,k+1).color = (255, 100, 255)
-        """                  
+                        
     #--------------------------------------------------------------------------------------------------        
 # AV Summary (v.s. price in Program Matrix)
     sheet_av_summary = wb.sheets[sheet_name_avsummary]
@@ -787,21 +787,21 @@ def Quote_Validation():
     CurrentMonth= [col for col in df_quote_programmatrix.columns if 'Current' in col and 'Month' in col][0]
     df_quote_programmatrix[CurrentMonth] = (
     df_quote_programmatrix[CurrentMonth]
-    .astype(str)                     # 確保為字串格式
-    .str.strip()                     # 去除前後空格
-    .str.replace(r'[^\d.]', '', regex=True)  # 移除非數字和小數點的字符
+    .astype(str)                    
+    .str.strip()                    
+    .str.replace(r'[^\d.]', '', regex=True)  # remove non-numeric and float
     )
            
     if len(df1_tmp[df1_tmp.duplicated(subset=[AV_column_name])]) != 0: 
-    # 篩選重複值且 'Current Month' 不為 0 的行
+    # remove duplicated and 'Current Month' !=0
         repetition1 = df1_tmp[df1_tmp.duplicated(subset=[AV_column_name]) & (df1_tmp[CurrentMonth] != 0)].loc[:, [AV_column_name, CurrentMonth]]
         repetition1_index = repetition1.index.tolist()
         
     #show in the sheet
     if len(repetition1_index) != 0:
-        sheet_tmp.range('L1').value = 'Data has repetition AV as below'       
-        sheet_tmp.range('L1:X1').color = (102, 255, 178)
-        sheet_tmp.range('L2').value = repetition1  
+        sheet_program_matrix.range('T1').value = 'Data has repetition AV as below'       
+        sheet_program_matrix.range('A1:X1').color = (102, 255, 178)
+        sheet_program_matrix.range('T2').value = repetition1  
     #pop up alert
         program_matirx_warn_code()
     
